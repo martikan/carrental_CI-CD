@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "car-rental.fullname" . }}-auth-api
+  labels:
+    {{- include "car-rental.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.auth.autoscaling.enabled }}
+  replicas: {{ .Values.auth.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "car-rental.selectorLabels" . | nindent 6 }}
+      component: auth-api
+  template:
+    metadata:
+      {{- with .Values.auth.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "car-rental.selectorLabels" . | nindent 8 }}
+        component: auth-api
+    spec:
+      {{- with .Values.auth.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "car-rental.authServiceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.auth.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.auth.securityContext | nindent 12 }}
+          image: "{{ .Values.auth.image.repository }}:{{ .Values.auth.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.auth.image.pullPolicy }}
+          env:
+            - name: "POSTGRES_DRIVER"
+              value: {{ .Values.auth.postgres.driver }}
+            - name: "POSTGRES_HOST"
+              value: {{ .Values.auth.postgres.host }}
+            - name: "POSTGRES_DB"
+              value: {{ .Values.auth.postgres.db }}
+            - name: "POSTGRES_PORT"
+              value: {{ .Values.auth.postgres.port | quote }}
+            - name: "SSL_MODE"
+              value: {{ .Values.auth.postgres.ssl_mode }}
+            - name: "POSTGRES_USER"
+              valueFrom:
+                secretKeyRef:
+                  key: pgUser
+                  name: auth-db-secrets
+            - name: "POSTGRES_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  key: pgPassword
+                  name: auth-db-secrets
+            - name: "ACCESS_TOKEN_DURATION"
+              valueFrom:
+                configMapKeyRef:
+                  key: accessTokenDuration
+                  name: api-configs
+            - name: "TOKEN_SYMMETRIC_KEY"
+              valueFrom:
+                secretKeyRef:
+                  key: accessTokenKey
+                  name: api-secrets
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          # FIXME: Should implement it!
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          resources:
+            {{- toYaml .Values.auth.resources | nindent 12 }}
+      {{- with .Values.auth.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.auth.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.auth.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

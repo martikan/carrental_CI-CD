@@ -1,0 +1,6 @@
+.git/
+test_data.txt
+.vscode/
+.idea/
+workspace.code-workspace
+.DS_Store

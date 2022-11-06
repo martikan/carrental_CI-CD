@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "car-rental.fullname" . }}-auth-api
+  labels: {{- include "car-rental.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.auth.service.type }}
+  ports:
+    - port: {{ .Values.auth.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector: {{- include "car-rental.selectorLabels" . | nindent 4 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "car-rental.fullname" . }}-cars-api
+  labels: {{- include "car-rental.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.cars.service.type }}
+  ports:
+    - port: {{ .Values.cars.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector: {{- include "car-rental.selectorLabels" . | nindent 4 }}

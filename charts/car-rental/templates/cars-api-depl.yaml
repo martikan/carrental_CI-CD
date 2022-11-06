@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "car-rental.fullname" . }}-cars-api
+  labels:
+    {{- include "car-rental.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.cars.autoscaling.enabled }}
+  replicas: {{ .Values.cars.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "car-rental.selectorLabels" . | nindent 6 }}
+      component: cars-api
+  template:
+    metadata:
+      {{- with .Values.cars.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "car-rental.selectorLabels" . | nindent 8 }}
+        component: cars-api
+    spec:
+      {{- with .Values.cars.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "car-rental.carsServiceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.cars.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.cars.securityContext | nindent 12 }}
+          image: "{{ .Values.cars.image.repository }}:{{ .Values.cars.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.cars.image.pullPolicy }}
+          env:
+            - name: "POSTGRES_DRIVER"
+              value: {{ .Values.cars.postgres.driver }}
+            - name: "POSTGRES_HOST"
+              value: {{ .Values.cars.postgres.host }}
+            - name: "POSTGRES_DB"
+              value: {{ .Values.cars.postgres.db }}
+            - name: "POSTGRES_PORT"
+              value: {{ .Values.cars.postgres.port | quote }}
+            - name: "SSL_MODE"
+              value: {{ .Values.cars.postgres.ssl_mode }}
+            - name: "POSTGRES_USER"
+              valueFrom:
+                secretKeyRef:
+                  key: pgUser
+                  name: cars-db-secrets
+            - name: "POSTGRES_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  key: pgPassword
+                  name: cars-db-secrets
+            - name: "ACCESS_TOKEN_DURATION"
+              valueFrom:
+                configMapKeyRef:
+                  key: accessTokenDuration
+                  name: api-configs
+            - name: "TOKEN_SYMMETRIC_KEY"
+              valueFrom:
+                secretKeyRef:
+                  key: accessTokenKey
+                  name: api-secrets
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          # FIXME: Should implement it!
+          # livenessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          # readinessProbe:
+          #   httpGet:
+          #     path: /
+          #     port: http
+          resources:
+            {{- toYaml .Values.cars.resources | nindent 12 }}
+      {{- with .Values.cars.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.cars.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.cars.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

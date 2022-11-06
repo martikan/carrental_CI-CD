@@ -1,0 +1,40 @@
+image:
+  tag: master-pg14
+
+debug: true
+
+replicationUsername: "repl"
+replicationPassword: "aaa"
+
+superuserUsername: "stolon"
+superuserPassword: "aaa"
+
+sentinel:
+  replicaCount: 3
+
+proxy:
+  replicaCount: 2
+
+keeper:
+  replicaCount: 3
+
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 10Gi
+
+rbac:
+  create: true
+
+serviceAccount:
+  create: true
+
+initdbScripts:
+  create_script.sh:
+    #!/bin/sh
+    psql -h ${HOST} -p 5432 -U stolon -q postgres -x -c "CREATE USER auth WITH PASSWORD 'aaa';"
+    psql -h ${HOST} -p 5432 -U stolon -q postgres -x -c "CREATE USER cars WITH PASSWORD 'aaa';"
+    psql -h ${HOST} -p 5432 -U stolon -q postgres -x -c "CREATE DATABASE auth WITH OWNER = auth;"
+    psql -h ${HOST} -p 5432 -U stolon -q postgres -x -c "CREATE DATABASE cars WITH OWNER = cars;"
+    psql -h ${HOST} -p 5432 -U stolon -q postgres -x -c "GRANT ALL PRIVILEGES ON DATABASE "auth" to auth;"
+    psql -h ${HOST} -p 5432 -U stolon -q postgres -x -c "GRANT ALL PRIVILEGES ON DATABASE "cars" to cars;"

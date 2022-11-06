@@ -1,0 +1,15 @@
+securityConfigs:
+  accessTokenKey: "12345678901234567890123456789012"
+  accessTokenDuration: 1200m
+
+auth:
+  postgres:
+    host: "postgres-ha-stolon-proxy"
+    password: "aaa"
+    ssl_mode: "disable"
+
+cars:
+  postgres:
+    host: "postgres-ha-stolon-proxy"
+    password: "aaa"
+    ssl_mode: "disable"
