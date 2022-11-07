@@ -9,8 +9,10 @@ securityConfigs:
 ## Authentication API
 ##
 auth:
-
   replicaCount: 1
+
+  username: "admin"
+  password:
 
   image:
     repository: martikan/carrental_auth-api
@@ -80,7 +82,6 @@ auth:
 ## Cars API
 ##
 cars:
-
   replicaCount: 1
 
   image:

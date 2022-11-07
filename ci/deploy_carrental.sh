@@ -58,6 +58,16 @@ function main() {
 
     echo "====================================="
 
+    AUTH_API_ADMIN_USERNAME=$(kubectl -n ${NS} get secret admin-secret -o go-template="{{ .data.auth_api_admin_user | base64decode }}")
+    AUTH_API_ADMIN_PASSWORD=$(kubectl -n ${NS} get secret admin-secret -o go-template="{{ .data.auth_api_admin_user_password | base64decode }}")
+
+    jq -n \
+        --arg uu "http://localhost:3000" \
+        --arg u "${AUTH_API_ADMIN_USERNAME}" \
+        --arg pw "${AUTH_API_ADMIN_PASSWORD}" \
+        --arg dt "$(date -Iseconds)" \
+        '{ui_url: $uu, admin_user: $u, admin_password: $pw, deployed: $dt}' > carrental_deployment.json
+
     echo "Application has been deployed successfully..."
 }
 

@@ -72,3 +72,19 @@ Create the name of the service account for cars-api
 {{- end }}
 {{- end }}
 
+
+{{/*
+Auth-api admin user credentials templates
+*/}}
+{{- define "auth.generatePwd" -}}
+{{- $unescapedPwd := printf "%s%s%s%s%s%s" (randAlpha 6) (randNumeric 2) (randAlpha 6) (randNumeric 2) "_" (randAscii 14) -}}
+{{- regexReplaceAllLiteral "[^A-Za-z0-9._+@%/><~?#-]" $unescapedPwd "@" -}}
+{{- end -}}
+
+{{- define "auth.authAdminUserPassword" -}}
+{{- if not .Values.auth.password -}}
+{{ include "auth.generatePwd" . }}
+{{- else -}}
+{{ .Values.auth.password }}
+{{- end -}}
+{{- end -}}
