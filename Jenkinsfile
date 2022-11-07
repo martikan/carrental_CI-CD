@@ -35,6 +35,22 @@ pipeline {
             }
         }
 
+        stage('Clean up the namespace') {
+            steps {
+                ws("deploy_carrental") {
+                    script {
+                        if (params.CLUSTER == "localhost") {
+                            unset KUBECONFIG
+                        }
+
+                        kubectl delete -n ${NS}
+
+                        kubectl create -n ${NS}
+                    }
+                }
+            }
+        }
+
         stage('Deploy Application') {
             steps {
                 ws("deploy_carrental") {
@@ -50,10 +66,6 @@ pipeline {
                         '''
                         
                         echo "Deploying Application to namespace ${env.NS} on cluster ${env.CLUSTER} ..."
-
-                        if (params.CLUSTER == "localhost") {
-                            unset KUBECONFIG
-                        }
 
                         sh "${WORKSPACE}/ci/deploy_cds.sh"
 
