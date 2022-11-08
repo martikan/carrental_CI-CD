@@ -50,6 +50,11 @@ function main() {
 
     set -e
 
+    if [[ "${CLEANUP_NAMESPACE}" == "true" ]]; then
+        kubectl delete ns ${NS} --ignore-not-found
+        kubectl create ns ${NS}
+    fi
+
     # install_zookeeper_kafka
 
     deploy_postgres_ha

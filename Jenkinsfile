@@ -13,6 +13,8 @@ pipeline {
         
         string defaultValue: 'carrental', description: 'Name of the Kubernetes namespace to use for deployment.<br/><strong>The namespace should be dedicated to this deployment. <span style="color:red">If it already exists, it will be deleted.</span></strong>', name: 'NS'
 
+        booleanParam defaultValue: true, description: 'If set, cleans up the namespace.', name: 'CLEANUP_NAMESPACE'
+
         string defaultValue: '', description: 'Name of the Helm release. If it\'s blank, the namespace will be used as the release name.', name: 'RELEASE_NAME'
 
         string defaultValue: 'main', description: 'Git branch name', name: 'GIT_BRANCH'
